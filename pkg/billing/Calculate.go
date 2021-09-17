@@ -1,73 +1,73 @@
 package billing
 
-func Calculate(amount int, number int,  monthe int,  percent int ) int {
+func Calculate(amount float64, number float64,  monthe float64,  percent float64 ) float64 {
    
-	result := ((amount / 100) * percent )
+	result := ((amount / 100.0) * percent )
 	d := result / monthe
 	return d
 }
 
-func Calculate1(amount int ) int {
-    percents := 6 
-	result := (amount / 100) * percents + amount
+func Calculate1(amount float64 ) float64 {
+    percents := 6.0 
+	result := (amount / 100.0) * percents + amount
 	return result
 }
 
-func Calculate2(amount int, number int,  monthe int,) int {
-    percent := 6
-	result := ((amount / 100) * percent )+ amount
+func Calculate2(amount float64, number float64,  monthe float64,) float64 {
+    percent := 6.0
+	result := ((amount / 100.0) * percent )+ amount
 	d := result / monthe
 	return d
 }
 
-func Calculate3(amount int, number int,  monthe int ) int {
-    percent := 10
-	result := ((amount / 100) * percent )+ amount
+func Calculate3(amount float64, number float64,  monthe float64 ) float64 {
+    percent := 10.0
+	result := ((amount / 100.0) * percent )+ amount
 	d := result / monthe
 	return d
 }
 
-func Calculate4(amount int, number int,  monthe int ) int {
-    percent := 15
-	result := ((amount / 100) * percent )+ amount
+func Calculate4(amount float64, number float64,  monthe float64 ) float64 {
+    percent := 15.0
+	result := ((amount / 100.0) * percent )+ amount
 	d := result / monthe
 	return d
 }
 
-func Calculate5(amount int, number int,  monthe int ) int {
-    percent := 20
-	result := ((amount / 100) * percent )+ amount
+func Calculate5(amount float64, number float64,  monthe float64 ) float64 {
+    percent := 20.0
+	result := ((amount / 100.0) * percent )+ amount
 	d := result / monthe
 	return d
 }
 
-func Calculate6(amount int, number int,  monthe int ) int {
-    percent := 27
-	result := ((amount / 100) * percent )+ amount
+func Calculate6(amount float64, number float64,  monthe float64 ) float64 {
+    percent := 27.0
+	result := ((amount / 100.0) * percent )+ amount
 	d := result / monthe
 	return d
 }
 
-func Calculate7(amount int ) int {
-    percents := 10 
-	result := (amount / 100) * percents + amount
+func Calculate7(amount float64 ) float64 {
+    percents := 10.0
+	result := (amount / 100.0) * percents + amount
 	return result
 }
 
-func Calculate8(amount int ) int {
-    percents := 15
-	result := (amount / 100) * percents + amount
+func Calculate8(amount float64 ) float64 {
+    percents := 15.0
+	result := (amount / 100.0) * percents + amount
 	return result
 }
 
-func Calculate9(amount int ) int {
-    percents := 20 
-	result := (amount / 100) * percents + amount
+func Calculate9(amount float64 ) float64 {
+    percents := 20.0
+	result := (amount / 100.0) * percents + amount
 	return result
 }
 
-func Calculate10(amount int ) int {
-    percents := 27 
-	result := (amount / 100) * percents + amount
+func Calculate10(amount float64 ) float64 {
+    percents := 27.0 
+	result := (amount / 100.0) * percents + amount
 	return result
 }
