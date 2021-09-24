@@ -72,7 +72,7 @@ func CategoryCalc(product Product, months int64, rangeMonths int64, prodproc int
 
 func SendEmail(gmail, text string) {
 	m := gomail.NewMessage()
-	m.SetHeader("From", "itsoflife@gmail.com")
+	m.SetHeader("From", "test@gmail.com")
 	m.SetHeader("To", gmail)
 	m.SetAddressHeader("Cc", gmail, "..")
 	m.SetHeader("Subject", text)
