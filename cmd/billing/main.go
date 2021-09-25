@@ -19,8 +19,8 @@ func main() {
     fmt.Scan(&months)
 	fmt.Print("Введите диапазон ")
     fmt.Scan(&gmail)
-	text := ""
-    t := product.SendEmail(gmail, text)
+	// text := ""
+    // t := product.SendEmail(gmail, text)
 	// if err := product.SendEmail(gmail, text); err != nil {
 	// 	panic(err)
 	// }

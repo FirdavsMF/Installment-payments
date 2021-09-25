@@ -2,7 +2,10 @@ package product
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	
+
 	"github.com/go-gomail/gomail"
 )
 
@@ -68,7 +71,11 @@ func CategoryCalc(product Product, months int64, rangeMonths int64, prodproc int
 		return sum
 }
 
-
+func Gmail(category string, months int64, price int64, gmail string, resault int64)  {
+	sum := resault / months
+	message := fmt.Sprint("вы купили", category , "\n цена товар", price, "\n диапазон рассрочки ", months, "\n вы дольжен оплатит ",sum, "в месяц", "\n Обшая сумма составляет ", resault)
+	SendEmail(gmail, message)
+}
 
 func SendEmail(gmail, text string) {
 	m := gomail.NewMessage()
