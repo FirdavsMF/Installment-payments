@@ -3,6 +3,7 @@ module github.com/FirdavsMF/Installment-payments
 go 1.16
 
 require (
-	github.com/go-gomail/gomail v0.0.0-20160411212932-81ebce5c23df // indirect
-	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
+	github.com/gorilla/mux v1.8.0
+	github.com/jackc/pgx/v4 v4.13.0
+	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 )

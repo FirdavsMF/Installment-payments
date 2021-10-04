@@ -1,20 +1,143 @@
 package product
 
 import (
+	"context"
+	"database/sql"
 	"errors"
-	"fmt"
 	"log"
-	
+	"net/http"
+	"strings"
+	"time"
 
-	"github.com/go-gomail/gomail"
 )
 
-type Product struct {
-	Category	string			
-	Price		int64					
+type Service struct {
+	db *sql.DB
 }
 
-func Calc(months int64, category string, price int64) (int64, error) {
+func NewService(db *sql.DB) *Service {
+	return &Service{db: db}
+}
+
+type Product struct {
+	ID          int64  		`json:"id"`
+	NameProduct string 		`json:"name"`
+	Image       string 		`json:"image"`
+	Category	string		`json:"category"`
+	File  		string		`json:"file"`
+	Information string 		`json:"information"`
+	Count       int64  		`json:"count"`
+	Price		int64		`json:"price"`
+	Account_ID  int64		`json:"accountid"`
+	Created     string 		`json:"created"`
+}
+
+func (s *Service) ByID(ctx context.Context, id int64) (*Product, error) {
+	item := &Product{}
+
+	err := s.db.QueryRowContext(ctx, `
+		SELECT id, name, image, category, file, information, count, price, account_id, created FROM product WHERE id = $1
+	`, id).Scan(&item.ID, &item.NameProduct, &item.Image, &item.Category,  &item.File, &item.Information, &item.Count, &item.Price, &item.Account_ID, &item.Created)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, errors.New("item not found")
+	}
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return item, nil
+}
+
+func (s *Service) SaveProduct(ctx context.Context, id int64, name string, image string, category string, file string, information string, count int64, price int64, account_id int64) (*Product, error) {
+	if id != 0 {
+		times := time.Now()
+		time := strings.Split(times.String(), ".")
+		_, err := s.db.ExecContext(ctx, `
+			UPDATE product 
+			SET name = $2, image = $3, categoty = $4 file = $5, information = $6, count = $7, price = $8, account_id = $9, created = $10
+			WHERE id = $1
+			RETURNING id
+		`, id, name, image, category, file, information, count, price, account_id, time[0])
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+	}
+	if id == 0 {
+		times := time.Now()
+		time := strings.Split(times.String(), ".")
+		err := s.db.QueryRowContext(ctx, `
+		INSERT INTO product (name, image, category, file, information, count, price, account_id, created) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		RETURNING id
+		`, name, image, category, file, information, count, price, account_id, time[0]).Scan(
+			&id,
+		)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+	}
+	return s.ByID(ctx, id)
+}
+
+func (s *Service) All(ctx context.Context) ([]*Product, error) {
+	rows, err := s.db.QueryContext(ctx, `
+		SELECT id, name, image, category, file, information, count, price, account_id, created FROM product ORDER BY created
+	`)
+	if err != nil {
+		log.Println("GetAll s.pool.Query error:", err)
+		return nil, err
+	}
+	defer rows.Close()
+	items := make([]*Product, 0)
+	for rows.Next() {
+		item := &Product{}
+		err = rows.Scan(&item.ID, &item.NameProduct, &item.Image, &item.Category, &item.File, &item.Information, &item.Count, &item.Price, &item.Account_ID, &item.Created)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	if rows.Err() != nil {
+		log.Println("GetAll rows.Err error:", err)
+		return nil, err
+	}
+	return items, nil
+}
+
+func (s *Service) RemoveByID(ctx context.Context, id int64) (*Product, error) {
+	item, _ := s.ByID(ctx, id)
+	err := s.db.QueryRowContext(ctx, `
+	DELETE FROM product WHERE id = $1
+	`, id)
+	if err != nil {
+		log.Println(err)
+	}
+	return item, nil
+}
+
+func (s *Service) BuyProduct(ctx context.Context, id int64, count int64) (*Product, error) {
+		ProductID, err := s.ByID(ctx, id)
+			if err != nil {
+				log.Print(err)
+			}
+		if ((ProductID.Count == 1) || (ProductID.Count <= count)) {
+			ProductID.Count -= ProductID.Count
+			s.RemoveByID(ctx, id)
+			return ProductID, nil
+		}
+		if (ProductID.Count > 0) {
+			ProductID.Count -= count
+			s.SaveProduct(ctx, ProductID.ID, ProductID.NameProduct, ProductID.Image, ProductID.Category, ProductID.File, ProductID.Information, ProductID.Count, ProductID.Price, ProductID.Account_ID)
+			return ProductID, nil
+		}
+		return nil, errors.New(http.StatusText(http.StatusInternalServerError))
+}
+
+func Calc(ctx context.Context, id int64, months int64, category string, price int64) (int64, error) {
 	//product, err := s.ByID(ctx, id)
 	//	if err != nil {
 	//		log.Print(err)
@@ -23,7 +146,6 @@ func Calc(months int64, category string, price int64) (int64, error) {
 		Category: category,
 		Price: price,
 	}
-	 
 	sum := int64(0)
 	prodproc := int64(0)
 	rangeMonths := int64(0)
@@ -70,53 +192,3 @@ func CategoryCalc(product Product, months int64, rangeMonths int64, prodproc int
 		sum := product.Price + sumproc
 		return sum
 }
-
-func Gmail(category string, months int64, price int64, gmail string, resault int64)  {
-	sum := resault / months
-	message := fmt.Sprint("вы купили", category , "\n цена товар", price, "\n диапазон рассрочки ", months, "\n вы дольжен оплатит ",sum, "в месяц", "\n Обшая сумма составляет ", resault)
-	SendEmail(gmail, message)
-}
-
-func SendEmail(gmail, text string) {
-	m := gomail.NewMessage()
-	m.SetHeader("From", "test@gmail.com")
-	m.SetHeader("To", gmail)
-	m.SetAddressHeader("Cc", gmail, "..")
-	m.SetHeader("Subject", text)
-	m.SetBody("text/html", text)
-	m.Attach("myfavicon.ico")
-
-	d := gomail.NewDialer("smtp.gmail.com", 587, "name", "password")
-
-	
-	if err := d.DialAndSend(m); err != nil {
-		panic(err)
-	}
-	return
-}
-
-// func SendEmail(message ,formAddress,receiveAddress ,username,authorizationCode string)  {
-// 	// Create a new message object
-// 	msg := gomail.NewMessage()
-
-// 	//Sender
-// 	msg.SetAddressHeader("From",formAddress,"False alarm")
-
-// 	//recipient
-// 	msg.SetHeader("To",msg.FormatAddress(receiveAddress,""))
-
-// 	//text
-// 	msg.SetBody("text/html",message)
-
-// 	//Attachment msg.Attach
-
-// 	//The default is QQ mailbox, you need to enter the mailbox "settings", find the "POP3/SMTP service" setting item in the "account" item, and turn it on
-// 	d := gomail.NewDialer("smtp.qq.com", 465, username, authorizationCode) // Outgoing mail server, port, sender account number, authorization code
-// 	if err := d.DialAndSend(msg); err != nil {
-// 		log.Println("Failed to send", err)
-// 		return
-// 	}
-
-// 	return
-
-// }
