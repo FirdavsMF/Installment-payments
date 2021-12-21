@@ -9,3 +9,5 @@ start the server
 
 open  index.html
 ### web/index.html
+
+[./docs/Installment-payments.png]
