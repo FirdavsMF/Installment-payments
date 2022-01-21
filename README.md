@@ -36,7 +36,8 @@ curl --request POST http://127.0.0.1:9999/api/products/save?id=0&accountid=2
 
 ## view all product
 
-``` curl --request GET   http://127.0.0.1:9999/api/products/All
+```
+ curl --request GET   http://127.0.0.1:9999/api/products/All
 ```
 
 ## product update
